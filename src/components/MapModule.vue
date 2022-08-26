@@ -1,9 +1,3 @@
-<!--
- 描述: 3D立体柱状图
- 作者: Jack Chen
- 日期: 2020-04-18
--->
-
 <template>
   <div class="wrap-container trigle">
     <div class="bar bar-img"></div>
