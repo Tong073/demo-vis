@@ -24,7 +24,8 @@ let mapScreenDataGroup = {
     geoJson = null,
     activeScreenData = null,
     preScreenDataName = '',
-    preScreenData = null;
+    preScreenData = null,
+    cityPointGroup = null;
 let meshGroup = { //有点击事件的mesh类型
   mapMesh: "mapMesh", //地图
   markMesh: "markMesh" //标记点
@@ -33,7 +34,7 @@ export default {
   name: 'mapGroup',
   data() {
     return {
-      a:'',
+      a: '',
       mapGroup: null,
       bgColor: 0x2defff,
       raycaster: null,
@@ -61,6 +62,7 @@ export default {
     activeScreenData = null;
     preScreenDataName = '';
     preScreenData = null;
+    cityPointGroup = null;
   },
   methods: {
     /**
@@ -385,7 +387,7 @@ export default {
         let geometry = new THREE.PlaneGeometry(1, 1) // 矩形平面
         // TextureLoader创建一个纹理加载器对象，可以加载图片作为几何体纹理
         let textureLoader = new THREE.TextureLoader();
-        let cityPointGroup = new THREE.Group()
+        cityPointGroup = new THREE.Group()
         // 执行load方法，加载纹理贴图成功后，返回一个纹理对象Texture
         textureLoader.load(img, (texture) => {
           let material = new THREE.MeshLambertMaterial({
@@ -395,8 +397,12 @@ export default {
             depthTest: false,
             transparent: true // 使用背景透明的png贴图，注意开启透明计算
           }) // 材质对象Material
+          let size = Math.random();
+          size = size > 0.5 ? 0.5 : (size < 0.3 ? 0.3 : parseFloat(size, 2))
           let mesh = new THREE.Mesh(geometry, material)
           mesh.position.set(positionItem.properties._centroid[0], -positionItem.properties._centroid[1], 0.7) // 设置mesh位置
+          mesh.scale.set(size, size, size) // 设置mesh大小
+          mesh._s = size // mesh自定义一个属性表征大小
           cityPointGroup.add(mesh)
         })
         curScreen.add(cityPointGroup)
@@ -442,6 +448,19 @@ export default {
      */
     render() {
       renderer.render(activeScreenData.screen, camera)
+      if (cityPointGroup.children.length) {
+        cityPointGroup.children.forEach(function (mesh) {
+          mesh._s += 0.008;
+          mesh.scale.set(mesh._s, mesh._s, mesh._s);
+          if (mesh._s <= 0.5) {
+            mesh.material.opacity = (1 - mesh._s) * 1.5;
+          } else if (mesh._s > 0.5 && mesh._s <= 1) {
+            mesh.material.opacity = (1 - mesh._s) * 2;
+          } else {
+            mesh._s = 0.5;
+          }
+        })
+      }
     },
 
     // 根据浏览器窗口变化动态更新尺寸
